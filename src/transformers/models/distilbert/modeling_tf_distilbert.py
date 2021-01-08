@@ -867,6 +867,85 @@ class TFDistilBertForSequenceClassification(TFDistilBertPreTrainedModel, TFSeque
             attentions=attns,
         )
 
+       
+class TFDistilBertForMultilabel(TFDistilBertPreTrainedModel):
+    def __init__(self, config, *inputs, **kwargs):
+        super().__init__(config, *inputs, **kwargs)
+        self.num_labels = config.num_labels
+
+        self.distilbert = TFDistilBertMainLayer(config, name="distilbert")
+        self.pre_classifier = tf.keras.layers.Dense(
+            config.dim,
+            kernel_initializer=get_initializer(config.initializer_range),
+            activation="relu",
+            name="pre_classifier",
+        )
+        self.classifier = tf.keras.layers.Dense(
+            config.num_labels, kernel_initializer=get_initializer(config.initializer_range), name="classifier", activation="sigmoid"
+        )
+        self.dropout = tf.keras.layers.Dropout(config.seq_classif_dropout)
+
+    def call(
+        self,
+        input_ids=None,
+        attention_mask=None,
+        head_mask=None,
+        inputs_embeds=None,
+        output_attentions=None,
+        output_hidden_states=None,
+        return_dict=None,
+        labels=None,
+        training=False,
+        **kwargs,
+    ):
+        r"""
+        labels (:obj:`tf.Tensor` of shape :obj:`(batch_size,)`, `optional`):
+            Labels for computing the sequence classification/regression loss. Indices should be in ``[0, ...,
+            config.num_labels - 1]``. If ``config.num_labels == 1`` a regression loss is computed (Mean-Square loss),
+            If ``config.num_labels > 1`` a classification loss is computed (Cross-Entropy).
+        """
+        inputs = input_processing(
+            func=self.call,
+            config=self.config,
+            input_ids=input_ids,
+            attention_mask=attention_mask,
+            head_mask=head_mask,
+            inputs_embeds=inputs_embeds,
+            output_attentions=output_attentions,
+            output_hidden_states=output_hidden_states,
+            return_dict=return_dict,
+            labels=labels,
+            training=training,
+            kwargs_call=kwargs,
+        )
+        distilbert_output = self.distilbert(
+            input_ids=inputs["input_ids"],
+            attention_mask=inputs["attention_mask"],
+            head_mask=inputs["head_mask"],
+            inputs_embeds=inputs["inputs_embeds"],
+            output_attentions=inputs["output_attentions"],
+            output_hidden_states=inputs["output_hidden_states"],
+            return_dict=inputs["return_dict"],
+            training=inputs["training"],
+        )
+        hidden_state = distilbert_output[0]  # (bs, seq_len, dim)
+        pooled_output = hidden_state[:, 0]  # (bs, dim)
+        pooled_output = self.pre_classifier(pooled_output)  # (bs, dim)
+        pooled_output = self.dropout(pooled_output, training=inputs["training"])  # (bs, dim)
+        logits = self.classifier(pooled_output)  # (bs, dim)
+
+        loss = None if inputs["labels"] is None else tf.keras.metrics.binary_crossentropy(inputs["labels"], logits) #self.compute_loss(inputs["labels"], logits)
+
+        if not inputs["return_dict"]:
+            output = (logits,) + distilbert_output[1:]
+            return ((loss,) + output) if loss is not None else output
+
+        return TFSequenceClassifierOutput(
+            loss=loss,
+            logits=logits,
+            hidden_states=distilbert_output.hidden_states,
+            attentions=distilbert_output.attentions,
+        )
 
 @add_start_docstrings(
     """
