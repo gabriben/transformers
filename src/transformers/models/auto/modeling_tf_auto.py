@@ -59,6 +59,7 @@ from ..distilbert.modeling_tf_distilbert import (
     TFDistilBertForMultipleChoice,
     TFDistilBertForQuestionAnswering,
     TFDistilBertForSequenceClassification,
+    TFDistilBertForMultilabel,
     TFDistilBertForTokenClassification,
     TFDistilBertModel,
 )
@@ -336,6 +337,7 @@ TF_MODEL_FOR_SEQUENCE_CLASSIFICATION_MAPPING = OrderedDict(
     [
         # Model for Sequence Classification mapping
         (DistilBertConfig, TFDistilBertForSequenceClassification),
+        (DistilBertConfig, TFDistilBertForMultilabel),
         (AlbertConfig, TFAlbertForSequenceClassification),
         (CamembertConfig, TFCamembertForSequenceClassification),
         (XLMRobertaConfig, TFXLMRobertaForSequenceClassification),

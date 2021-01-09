@@ -43,6 +43,7 @@ if is_tf_available():
         TFDistilBertForMultipleChoice,
         TFDistilBertForQuestionAnswering,
         TFDistilBertForSequenceClassification,
+        TFDistilBertForMultilabel,
         TFDistilBertForTokenClassification,
         TFDistilBertMainLayer,
         TFDistilBertModel,

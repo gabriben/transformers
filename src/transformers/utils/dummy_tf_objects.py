@@ -503,6 +503,14 @@ class TFDistilBertForSequenceClassification:
     def from_pretrained(self, *args, **kwargs):
         requires_tf(self)
 
+class TFDistilBertForMultilabel:
+    def __init__(self, *args, **kwargs):
+        requires_tf(self)
+
+    @classmethod
+    def from_pretrained(self, *args, **kwargs):
+        requires_tf(self)
+
 
 class TFDistilBertForTokenClassification:
     def __init__(self, *args, **kwargs):
