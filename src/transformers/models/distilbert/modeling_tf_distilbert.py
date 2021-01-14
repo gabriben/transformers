@@ -884,6 +884,7 @@ class TFDistilBertForMultilabel(TFDistilBertPreTrainedModel):
             config.num_labels, kernel_initializer=get_initializer(config.initializer_range), name="classifier", activation="sigmoid"
         )
         self.dropout = tf.keras.layers.Dropout(config.seq_classif_dropout)
+        self.loss = config.loss
 
     def call(
         self,
@@ -896,7 +897,7 @@ class TFDistilBertForMultilabel(TFDistilBertPreTrainedModel):
         return_dict=None,
         labels=None,
         training=False,
-        LOSS_FUNCTION= "crossEntropy",
+        self.loss= "crossEntropy",
         **kwargs,
     ):
         r"""
@@ -935,12 +936,12 @@ class TFDistilBertForMultilabel(TFDistilBertPreTrainedModel):
         pooled_output = self.dropout(pooled_output, training=inputs["training"])  # (bs, dim)
         logits = self.classifier(pooled_output)  # (bs, dim)
 
-        if LOSS_FUNCTION == "crossEntropy":
+        if self.loss == "crossEntropy":
             l = tf.keras.metrics.binary_crossentropy
-        elif LOSS_FUNCTION == "focalLoss":
+        elif self.loss == "focalLoss":
             l = tfa.losses.SigmoidFocalCrossEntropy
         else:
-            l = globals()[LOSS_FUNCTION]
+            l = globals()[self.loss]
 
         loss = None if inputs["labels"] is None else l(inputs["labels"], logits) #self.compute_loss(inputs["labels"], logits)
 
