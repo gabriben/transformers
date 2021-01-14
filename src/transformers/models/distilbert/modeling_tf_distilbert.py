@@ -868,7 +868,7 @@ class TFDistilBertForSequenceClassification(TFDistilBertPreTrainedModel, TFSeque
         )
 
        
-class TFDistilBertForMultilabel(TFDistilBertPreTrainedModel, TFSequenceClassificationLoss):
+class TFDistilBertForMultilabel(TFDistilBertPreTrainedModel):
     def __init__(self, config, *inputs, **kwargs):
         super().__init__(config, *inputs, **kwargs)
         self.num_labels = config.num_labels
@@ -896,6 +896,7 @@ class TFDistilBertForMultilabel(TFDistilBertPreTrainedModel, TFSequenceClassific
         return_dict=None,
         labels=None,
         training=False,
+        LOSS_FUNCTION,
         **kwargs,
     ):
         r"""
@@ -934,12 +935,12 @@ class TFDistilBertForMultilabel(TFDistilBertPreTrainedModel, TFSequenceClassific
         pooled_output = self.dropout(pooled_output, training=inputs["training"])  # (bs, dim)
         logits = self.classifier(pooled_output)  # (bs, dim)
 
-        if config.loss != "crossEntropy":
+        if LOSS_FUNCTION != "crossEntropy":
             l = tf.keras.metrics.binary_crossentropy
-        elif config.loss != "focalLoss":
+        elif LOSS_FUNCTION != "focalLoss":
             l = tfa.losses.SigmoidFocalCrossEntropy
         else:
-            l = globals()[config.loss]
+            l = globals()[LOSS_FUNCTION]
 
         loss = None if inputs["labels"] is None else l(inputs["labels"], logits) #self.compute_loss(inputs["labels"], logits)
 
