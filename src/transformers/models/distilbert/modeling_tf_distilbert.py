@@ -897,7 +897,6 @@ class TFDistilBertForMultilabel(TFDistilBertPreTrainedModel):
         return_dict=None,
         labels=None,
         training=False,
-        self.loss= "crossEntropy",
         **kwargs,
     ):
         r"""
