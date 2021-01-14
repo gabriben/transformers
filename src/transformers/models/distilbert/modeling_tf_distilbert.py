@@ -868,7 +868,7 @@ class TFDistilBertForSequenceClassification(TFDistilBertPreTrainedModel, TFSeque
         )
 
        
-class TFDistilBertForMultilabel(TFDistilBertPreTrainedModel):
+class TFDistilBertForMultilabel(TFDistilBertPreTrainedModel, TFSequenceClassificationLoss):
     def __init__(self, config, *inputs, **kwargs):
         super().__init__(config, *inputs, **kwargs)
         self.num_labels = config.num_labels
