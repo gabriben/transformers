@@ -938,13 +938,13 @@ class TFDistilBertForMultilabel(TFDistilBertPreTrainedModel):
         
         
         if self.loss == "crossEntropy":
-            l = tf.keras.metrics.binary_crossentropy
+            l = tf.keras.losses.binary_crossentropy
         elif self.loss == "focalLoss":
             l = tfa.losses.SigmoidFocalCrossEntropy
         else:
             l = globals()[self.loss]
 
-        loss = None if inputs["labels"] is None else tf.keras.metrics.binary_crossentropy(inputs["labels"], logits) #self.compute_loss(inputs["labels"], logits)
+        loss = None if inputs["labels"] is None else l(inputs.pop("labels"), logits)   # (inputs["labels"], logits, from_logits = True) #self.compute_loss(inputs["labels"], logits)
 
         if not inputs["return_dict"]:
             output = (logits,) + distilbert_output[1:]
